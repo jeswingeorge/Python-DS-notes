@@ -17,4 +17,5 @@ This repository contains some of my notes and codes in Python related to Data Sc
 1. [Bargraph](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Seaborn/1.%20Bargraph.ipynb)
 
 
-## [Time Series notes - Analystics Vidhya](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Time%20series/1.%20AV%20-%20Creating%20Time%20Series%20Forecast%20using%20Python.ipynb)
+## Time Series notes
+1. [Notes - Analytics Vidhya](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Time%20series/1.%20AV%20-%20Creating%20Time%20Series%20Forecast%20using%20Python.ipynb)
