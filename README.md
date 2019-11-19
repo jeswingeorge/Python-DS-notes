@@ -15,6 +15,7 @@ This repository contains some of my notes and codes in Python related to Data Sc
 
 ## Data Visualization notes
 1. [Bargraph](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Seaborn/1.%20Bargraph.ipynb)
+2. [Scatterplot](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Seaborn/2.%20Scatterplot.ipynb)
 
 
 ## Time Series notes
