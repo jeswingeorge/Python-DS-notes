@@ -18,7 +18,8 @@ This repository contains some of my notes and codes in Python related to Data Sc
 2. [Scatterplot](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Seaborn/2.%20Scatterplot.ipynb)
 3. [Regplot](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Seaborn/3.%20Regplot.ipynb)
 4. [Lmplot](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Seaborn/4.%20lmplot.ipynb)
-5. [Histogram](https://github.com/jeswingeorge/Python-DS-notes/blob/master/Seaborn/5.%20Histogram.ipynb)
+5. [Histogram](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Seaborn/5.%20Histogram.ipynb)
+6. [Jointplot](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Seaborn/6.%20Jointplot.ipynb)
 
 
 ## Time Series notes
