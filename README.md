@@ -8,6 +8,10 @@ This repository contains some of my notes and codes in Python related to Data Sc
 4. [Stacked area plots](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Miscellaneous/Stacked%20area%20plots.ipynb)
 5. [using pandas groupby- Different cases](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Miscellaneous/using%20pandas%20groupby-%20Different%20cases.ipynb)
 
+## Statistics
+
+1. [Measures of spread - Skewness and Kurtosis]()
+
 
 
 ## Webscrapping notes
