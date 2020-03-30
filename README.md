@@ -10,7 +10,7 @@ This repository contains some of my notes and codes in Python related to Data Sc
 
 ## Statistics
 
-1. [Measures of spread - Skewness and Kurtosis]()
+1. [Measures of spread - Skewness and Kurtosis](https://nbviewer.jupyter.org/github/jeswingeorge/Python-DS-notes/blob/master/Statistics/1.measures_of_shape.ipynb)
 
 
 
