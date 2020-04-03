@@ -18,7 +18,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 %matplotlib inline
-sns.set(rc={'figure.figsize':(11,9)})
+sns.set()
 from pandas.api.types import CategoricalDtype
 
 # pandas defaults
@@ -132,17 +132,18 @@ Columns with kde bw error with `sns.distplot()`
 
 ```
 col = ''
-train[col].value_counts(dropna = False)
-```
-
-```
 (train[col].value_counts(dropna = False, normalize = True)*100).plot(kind = 'barh');
 plt.xlabel('Count %ge');
 plt.ylabel(col);
 ```
 
-Check for NA and for those values which have the maximum frequency
+```
+train[col].value_counts(dropna = False)
+```
 
+Check for NA and for those values which have the maximum frequency and Nominal and ordinal category type.
 
+### Data Wrangling - Convert object to category column type
 
+## 3. Bivariate Analysis
 
