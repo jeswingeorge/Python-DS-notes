@@ -102,8 +102,15 @@ plt.figure(figsize=(9,6));
 sns.boxplot(train[col]);
 ```
 
+Writing dataframe which has skewness and kurtosis details of numerical columns to a pickle file:
+
+```
+measure_columns_spread_df.to_pickle('numerical_spread.pkl')
+```
+
 
 Identify the numerical variables that can be converted to nominal category and note them down in a list col_names-
+1st fill all the NA values
 
 ```
 col_names = [.........]
@@ -119,7 +126,7 @@ train[col] = train[col].astype(cat_type)
 train[col] = train[col].astype(cat_type)
 ```
 
-COlumns having month, year as its values
+Columns having month, year as its values
 [.......]
 
 Columns with kde bw error with `sns.distplot()`
@@ -127,6 +134,8 @@ Columns with kde bw error with `sns.distplot()`
 
 
 ### Univariate Analysis for categorical variables
+
+Make a list of object/category columns where NA implies a category in itself eg: No road, No pool, etc, replace NA here by 'None'.
 
 `string_columns = string_columns + [newly created categorical columns from numerical variables]`
 
@@ -143,7 +152,49 @@ train[col].value_counts(dropna = False)
 
 Check for NA and for those values which have the maximum frequency and Nominal and ordinal category type.
 
-### Data Wrangling - Convert object to category column type
+***
+
+# Data Wrangling
+
+#### Make a list of object columns where NA implies a category in itself eg: No road, No pool, etc, replace NA here by 'None'. THEN convert to category type.
+
+(Try to fix this issue in Univariate analysis itself if not possible use this: )
+One way to make a list of such columns - `col_fillna`
+
+Then from the columns obtained use data description to get columns whose NA values implies None. To remove those columns which do not satisfy the NA value as None condition remove that particular columns  from the list.
+
+```
+all_object_category_columns = train.select_dtypes(include = ['object', 'category']).columns
+col_fillna = list(set(test[all_object_category_columns].isnull().sum()[test[all_object_category_columns].isnull().sum()!=0].index.tolist() + 
+train[all_object_category_columns].isnull().sum()[train[all_object_category_columns].isnull().sum()!=0].index.tolist()))
+
+# list of columns which doesnt have NA as category and to be deleted from obj_categoryc_col_with_na
+del_list = []
+for col in del_list:
+    col_fillna.remove(col)
+    
+col_fillna  # columns where NaN values have meaning e.g. no pool etc.
+```
+
+```
+# replace 'NaN' with 'None' in these columns
+for col in cols_fillna:
+    train[col].fillna('None',inplace=True)
+    test[col].fillna('None',inplace=True)
+```
+
+
+
+
+
+
+
+# Data Wrangling - Convert object to category column type only after filling all the NA values
+
+
+
+
 
 ## 3. Bivariate Analysis
+
 
