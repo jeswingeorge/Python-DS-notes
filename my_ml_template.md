@@ -61,48 +61,51 @@ print("Number of object data types: ", len(train.select_dtypes(include = 'object
 ```
 numerical_columns = list(train.select_dtypes(include = numeric_dtypes).columns)
 string_columns = list(train.select_dtypes(include = 'object').columns)
+bool_columns = list(train.select_dtypes(include = 'bool').columns)
 ```
 
 ## 2. Univariate Analysis
 
 ### Univariate Analysis for numerical variables
 
-Function to find the skewness and kurtosis
+Function to find the skewness and kurtosis and presence of null values of columns of dataframe
 
 ```
 global measure_columns_spread_df
-measure_columns_spread_df = pd.DataFrame(columns = ['col_name', 'skewness', 'kurtosis', 'transformation_reqd'])
+measure_columns_spread_df = pd.DataFrame(columns = ['col_name', 'skewness', 'kurtosis', 'transformation_reqd', 'null_values'])
 def collect_calculate_col_spread(df, col):
     global measure_columns_spread_df
-    temp = pd.DataFrame(pd.Series([col, df[col].skew(), df[col].kurt(), np.nan])).T
-    temp.columns = ['col_name', 'skewness', 'kurtosis', 'transformation_reqd']
+    temp = pd.DataFrame(pd.Series([col, df[col].skew(), df[col].kurt(), np.nan, np.nan])).T
+    temp.columns = ['col_name', 'skewness', 'kurtosis', 'transformation_reqd', 'null_values']
     condition = (df[col].skew() < -1) | (df[col].skew() > 1) | (df[col].kurt() < -1) | ((df[col].kurt() > 1))
     temp.loc[0,'transformation_reqd']=np.where(condition, 'Yes', 'No')
+    temp.loc[0, 'null_values'] = np.where(df[col].isnull().sum(), 'Present', 'Absent')
+    print("Count of null values in train dataset: ", df[col].isnull().sum())
     measure_columns_spread_df = pd.concat([measure_columns_spread_df, temp], ignore_index = True)
 ```
 
-
-Plotting a histogram
-```
-col = '....'
-plt.figure(figsize=(10,6));
-sns.distplot(train[col]);
-```
-To find skewness and kurtosis of the numerical variable-
+Function to automate the univariate analysis of numerical variable 
 
 ```
-collect_calculate_col_spread(train, col)
-print("Skewness {}: {}".format(col, train[col].skew()))
-print("Kurtosis {}: {}".format(col, train[col].kurt()))
+def univariate_numerical_analysis(df, col):
+    collect_calculate_col_spread(df, col)
+    fig, axs = plt.subplots(2,1, figsize = (10,9));
+    sns.distplot(train[col], ax = axs[0]);
+    axs[0].set_title("Histogram of " + col);
+    axs[1].set_title("Boxplot of " + col);
+    sns.boxplot(train[col], ax = axs[1]);
+    title=("Skewness of {}: ".format(col) + "{0:.2f}".format(train[col].skew()) + " and " + "Kurtosis of {}: ".format(col) 
+           +"{0:.2f}".format(train[col].kurt()))
+    fig.suptitle(title, y = 1.01);
+    plt.tight_layout(); 
+    plt.show();
 ```
 
-Plotting a boxplot 
-```
-plt.figure(figsize=(9,6));
-sns.boxplot(train[col]);
-```
 
-Writing dataframe which has skewness and kurtosis details of numerical columns to a pickle file:
+
+
+
+
 
 ```
 measure_columns_spread_df.to_pickle('numerical_spread.pkl')
