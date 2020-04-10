@@ -21,6 +21,10 @@ import seaborn as sns
 sns.set()
 from pandas.api.types import CategoricalDtype
 
+# Ignore useless warnings
+import warnings
+warnings.filterwarnings(action="ignore")
+
 # pandas defaults
 pd.options.display.max_columns = 500
 pd.options.display.max_rows = 500
@@ -71,15 +75,18 @@ bool_columns = list(train.select_dtypes(include = 'bool').columns)
 Function to find the skewness and kurtosis and presence of null values of columns of dataframe
 
 ```
-global measure_columns_spread_df
+global measure_columns_spread_df, list_of_columns_with_null_values
+list_of_columns_with_null_values = []
 measure_columns_spread_df = pd.DataFrame(columns = ['col_name', 'skewness', 'kurtosis', 'transformation_reqd', 'null_values'])
-def collect_calculate_col_spread(df, col):
+def collect_calculate_col_spread(col, df = train):
     global measure_columns_spread_df
     temp = pd.DataFrame(pd.Series([col, df[col].skew(), df[col].kurt(), np.nan, np.nan])).T
     temp.columns = ['col_name', 'skewness', 'kurtosis', 'transformation_reqd', 'null_values']
     condition = (df[col].skew() < -1) | (df[col].skew() > 1) | (df[col].kurt() < -1) | ((df[col].kurt() > 1))
     temp.loc[0,'transformation_reqd']=np.where(condition, 'Yes', 'No')
     temp.loc[0, 'null_values'] = np.where(df[col].isnull().sum(), 'Present', 'Absent')
+    if (df[col].isnull().sum()):
+        list_of_columns_with_null_values.append(col)
     print("Count of null values in train dataset: ", df[col].isnull().sum())
     measure_columns_spread_df = pd.concat([measure_columns_spread_df, temp], ignore_index = True)
 ```
@@ -87,7 +94,7 @@ def collect_calculate_col_spread(df, col):
 Function to automate the univariate analysis of numerical variable 
 
 ```
-def univariate_numerical_analysis(df, col):
+def univariate_numerical_analysis(col, df = train):
     collect_calculate_col_spread(df, col)
     fig, axs = plt.subplots(2,1, figsize = (10,9));
     sns.distplot(train[col], ax = axs[0]);
@@ -102,24 +109,29 @@ def univariate_numerical_analysis(df, col):
 ```
 
 
-
-
-
-
+For some of the numerical variable this error might come up - [seaborn: Selected KDE bandwidth is 0. Cannot estimate density](https://stackoverflow.com/questions/60596102/seaborn-selected-kde-bandwidth-is-0-cannot-estimate-density). Then use the following code for analysis:
 
 ```
-measure_columns_spread_df.to_pickle('numerical_spread.pkl')
+col = ''
+train[col].plot(kind= 'hist');
 ```
 
 
 Identify the numerical variables that can be converted to nominal category and note them down in a list col_names-
 1st fill all the NA values
 
+
+```
+for col in list_of_columns_with_null_values:
+    train[col] = train[col].fillna(train[col].median())
+    test[col] = test[col].fillna(train[col].median())
+```
+
 ```
 col_names = [.........]
 for col in col_names:
-	train[col] = train[col].astype('category')
-	test[col] = test[col].astype('category')
+    train[col] = train[col].astype('category')
+    test[col] = test[col].astype('category')
 ```
 
 For each ordinal category data type
@@ -136,22 +148,38 @@ Columns with kde bw error with `sns.distplot()`
 [......]
 
 
+
+CHeck for presence of 
+
+```
+measure_columns_spread_df.to_pickle('numerical_spread.pkl')
+```
+
+
+
+
 ### Univariate Analysis for categorical variables
 
 Make a list of object/category columns where NA implies a category in itself eg: No road, No pool, etc, replace NA here by 'None'.
 
-`string_columns = string_columns + [newly created categorical columns from numerical variables]`
-
 ```
-col = ''
-(train[col].value_counts(dropna = False, normalize = True)*100).plot(kind = 'barh');
-plt.xlabel('Count %ge');
-plt.ylabel(col);
+object_category_columns = ['category', 'object']
+train.select_dtypes(include = object_category_columns).columns
 ```
 
 ```
-train[col].value_counts(dropna = False)
+global list_of_object_category_columns_with_null_values
+list_of_object_category_columns_with_null_values = []
+def univariate_category_analysis(train, col):
+    print('Number of null values in {} is: {}'.format(col, train[col].isnull().sum()))
+    if (train[col].isnull().sum()):
+        list_of_object_category_columns_with_null_values.append(col)
+    (train[col].value_counts(dropna = False, normalize = True)*100).plot(kind = 'barh');
+    plt.xlabel('Count %ge');
+    plt.ylabel(col);
+    plt.show();
 ```
+
 
 Check for NA and for those values which have the maximum frequency and Nominal and ordinal category type.
 
