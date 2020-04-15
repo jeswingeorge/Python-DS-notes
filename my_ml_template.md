@@ -21,6 +21,16 @@ import seaborn as sns
 sns.set()
 from pandas.api.types import CategoricalDtype
 
+from sklearn.compose import make_column_transformer
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import cross_val_score
+
+from scipy.stats import f  # TO find F-statistic for ANOVA
+
+import statsmodels.api as sm
+from statsmodels.formula.api import ols   # To perform ANOVA
+
 # Ignore useless warnings
 import warnings
 warnings.filterwarnings(action="ignore")
@@ -181,7 +191,18 @@ def univariate_category_analysis(train, col):
 ```
 
 
+
 Check for NA and for those values which have the maximum frequency and Nominal and ordinal category type.
+
+
+
+
+Create two lists in which ordinal and nominal columns' names are appended. 
+
+```
+ordinal_columns_list = []
+nominal_columns_list = []
+```
 
 ***
 
@@ -228,4 +249,38 @@ for col in cols_fillna:
 
 ## 3. Bivariate Analysis
 
+
+
+
+To find association between a categorical and continuous value using ANOVA
+```
+global categ_columns_with_high_association, categ_columns_with_low_association
+categ_columns_with_high_association = []
+categ_columns_with_low_association = []
+def perform_anova_and_its_results(categ_col, num_col='SalePrice_Log', df = train):
+    df_sst = len(df[num_col])-1
+    df_ssb = df[categ_col].nunique() - 1
+    df_ssw = df_sst - df_ssb
+    F_critical = f.ppf(0.95, df_ssb, df_ssw)
+    print("F_Critical: {0:.3f}".format(F_critical))
+    results = ols('{} ~{}'.format(num_col, categ_col), data = train).fit()
+    aov_table = sm.stats.anova_lm(results, typ = 1)  
+    F_stat = aov_table.loc[categ_col, 'F']
+    print("F_statistic: {0:.3f}".format(F_stat))
+    if (F_stat > F_critical):
+        print("F-statistic is more than F-critical")
+        print("There is an association between {} and {}".format(categ_col,num_col))
+        categ_columns_with_high_association.append(categ_col)
+    else:
+        print("F-statistic is less than F-critical")
+        print("There is no association between {} and {}".format(categ_col,num_col))
+        categ_columns_with_low_association.append(categ_col)
+    print('-'*30)
+```
+
+```
+
+for col in train.select_dtypes(include = ['category', 'object']).columns.to_list():
+    perform_anova_and_its_results(col)
+```
 
