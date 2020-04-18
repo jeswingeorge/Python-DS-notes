@@ -284,3 +284,11 @@ for col in train.select_dtypes(include = ['category', 'object']).columns.to_list
     perform_anova_and_its_results(col)
 ```
 
+To find association between 2 categorical variables:
+```
+def phi_coefficient(a,b):
+    temp = pd.crosstab(a,b)
+    return(((temp.iloc[1,1] * temp.iloc[0,0]) - (temp.iloc[0,1]*temp.iloc[1,0]))/
+          np.sqrt(np.prod(temp.apply(sum, axis = 'index').to_list()) * np.prod(temp.apply(sum, axis = 'columns').to_list())))
+
+```
