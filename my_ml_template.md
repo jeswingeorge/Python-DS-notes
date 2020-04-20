@@ -21,15 +21,9 @@ import seaborn as sns
 sns.set()
 from pandas.api.types import CategoricalDtype
 
-from sklearn.compose import make_column_transformer
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.model_selection import cross_val_score
-
-from scipy.stats import f  # TO find F-statistic for ANOVA
-
-import statsmodels.api as sm
-from statsmodels.formula.api import ols   # To perform ANOVA
+import math
+from collections import Counter
+from scipy import stats
 
 # Ignore useless warnings
 import warnings
@@ -38,6 +32,18 @@ warnings.filterwarnings(action="ignore")
 # pandas defaults
 pd.options.display.max_columns = 500
 pd.options.display.max_rows = 500
+
+import statsmodels.api as sm
+from statsmodels.formula.api import ols   # To perform ANOVA
+
+# f - To find F-statistic for ANOVA
+from scipy.stats import chi2_contingency, chi2, f
+
+from sklearn.compose import make_column_transformer
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import cross_val_score
+
 ```
 
 
@@ -250,14 +256,14 @@ for col in cols_fillna:
 ## 3. Bivariate Analysis
 
 
+#### a. Categorical and continuous variables
 
-
-To find association between a categorical and continuous value using ANOVA
+To find association between a categorical and continuous(target) value using ANOVA
 ```
 global categ_columns_with_high_association, categ_columns_with_low_association
 categ_columns_with_high_association = []
 categ_columns_with_low_association = []
-def perform_anova_and_its_results(categ_col, num_col='SalePrice_Log', df = train):
+def perform_anova_and_its_results(categ_col, num_col=target_numerical_col, df = train):
     df_sst = len(df[num_col])-1
     df_ssb = df[categ_col].nunique() - 1
     df_ssw = df_sst - df_ssb
@@ -284,11 +290,72 @@ for col in train.select_dtypes(include = ['category', 'object']).columns.to_list
     perform_anova_and_its_results(col)
 ```
 
-To find association between 2 categorical variables:
+
+### b. categorical-categorical variable relationship
+
+#### To find association i.e., phi-coefficient between 2 binary categorical variables:
 ```
 def phi_coefficient(a,b):
+	# a and b are 2 binary columns/series of dataframe
+    # At least one variable a or b is a nominal variable.
     temp = pd.crosstab(a,b)
     return(((temp.iloc[1,1] * temp.iloc[0,0]) - (temp.iloc[0,1]*temp.iloc[1,0]))/
           np.sqrt(np.prod(temp.apply(sum, axis = 'index').to_list()) * np.prod(temp.apply(sum, axis = 'columns').to_list())))
+
+```
+
+#### To find association between nominal categorical variables
+
+1. Using Crammer's V (Gives correlation between the 2 nominal categorical variables assume symmetry i.e, V(x,y)=V(y,x))
+
+```
+def cramers_v(a,b):
+    crosstab = pd.crosstab(tips["day"], tips["time"])
+    chi2 = chi2_contingency(crosstab)[0]  # chi-squared value
+    n = crosstab.sum().sum()
+    phi2 = chi2/n
+    r, k = crosstab.shape
+    phi2corr = max(0, phi2-((k-1)*(r-1))/(n-1))
+    rcorr = r-((r-1)**2)/(n-1)
+    kcorr = k-((k-1)**2)/(n-1)
+    return(np.sqrt(phi2corr/min((kcorr-1),(rcorr-1))))
+```
+
+
+2.  Using Theil’s U (Gives correlation between the 2 nominal categorical variables doesnt consider Symmetry i.e, U(x,y)!=U(y,x))
+
+```
+def conditional_entropy(x, y):
+    """
+    Calculates the conditional entropy of x given y: S(x|y)
+    Wikipedia: https://en.wikipedia.org/wiki/Conditional_entropy
+    :param x: list / NumPy ndarray / Pandas Series
+        A sequence of measurements
+    :param y: list / NumPy ndarray / Pandas Series
+        A sequence of measurements
+    :return: float
+    """
+    # entropy of x given y
+    y_counter = Counter(y)
+    xy_counter = Counter(list(zip(x,y)))
+    total_occurrences = sum(y_counter.values())
+    entropy = 0.0
+    for xy in xy_counter.keys():
+        p_xy = xy_counter[xy] / total_occurrences
+        p_y = y_counter[xy[1]] / total_occurrences
+        entropy += p_xy * math.log(p_y/p_xy)
+    return entropy
+
+
+def theils_u(x, y):
+    s_xy = conditional_entropy(x,y)
+    x_counter = Counter(x)
+    total_occurrences = sum(x_counter.values())
+    p_x = list(map(lambda n: n/total_occurrences, x_counter.values()))
+    s_x = stats.entropy(p_x)
+    if s_x == 0:
+        return(1)
+    else:
+        return((s_x - s_xy)/s_x)
 
 ```
