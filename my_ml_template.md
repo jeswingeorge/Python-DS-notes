@@ -18,8 +18,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 %matplotlib inline
-sns.set()
+sns.set(style="ticks", rc={'figure.figsize':(11,9)})
+sns.set_context(rc = {"font.size":15, "axes.labelsize":15}, font_scale=2)
+sns.set_palette('colorblind');
 from pandas.api.types import CategoricalDtype
+# pandas defaults
+pd.options.display.max_columns = 500
+pd.options.display.max_rows = 500
 
 import math
 from collections import Counter
@@ -29,9 +34,6 @@ from scipy import stats
 import warnings
 warnings.filterwarnings(action="ignore")
 
-# pandas defaults
-pd.options.display.max_columns = 500
-pd.options.display.max_rows = 500
 
 import statsmodels.api as sm
 from statsmodels.formula.api import ols   # To perform ANOVA
@@ -293,6 +295,29 @@ for col in train.select_dtypes(include = ['category', 'object']).columns.to_list
 
 ### b. categorical-categorical variable relationship
 
+First need to check if the 2 categorical variables involved are dependant or not this can be done with the help of chi-squared test.
+
+```
+dependant_category_cols = []
+def chi_square_test(a,b, df = X_train):
+    # a and b are the column names of dataframe - pandas series
+    two_way_table = pd.crosstab(X_train[a],X_train[b])
+    p_value = chi2_contingency(two_way_table)[1]
+    if (p_value < 0.05):
+      #  print("Null hypothesis is rejected. The variables {} and {} are dependent.".format(a,b))
+        dependant_category_cols.append((a,b))
+   # else:
+       # print("The variables {} and {} are independent.".format(a,b))
+
+```
+
+```
+# To create a dataframe with columns which are dependant
+df = pd.DataFrame(dependant_category_cols, columns =['col1', 'col2']) 
+```
+
+
+
 #### To find association i.e., phi-coefficient between 2 binary categorical variables:
 ```
 def phi_coefficient(a,b):
@@ -310,7 +335,7 @@ def phi_coefficient(a,b):
 
 ```
 def cramers_v(a,b):
-    crosstab = pd.crosstab(tips["day"], tips["time"])
+    crosstab = pd.crosstab(a,b)
     chi2 = chi2_contingency(crosstab)[0]  # chi-squared value
     n = crosstab.sum().sum()
     phi2 = chi2/n
