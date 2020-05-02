@@ -18,7 +18,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 %matplotlib inline
-sns.set(style="ticks", rc={'figure.figsize':(11,9)})
+sns.set(style="ticks", rc={'figure.figsize':(9,8)})
 sns.set_context(rc = {"font.size":15, "axes.labelsize":15}, font_scale=2)
 sns.set_palette('colorblind');
 from pandas.api.types import CategoricalDtype
