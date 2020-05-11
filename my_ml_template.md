@@ -25,6 +25,8 @@ from pandas.api.types import CategoricalDtype
 # pandas defaults
 pd.options.display.max_columns = 500
 pd.options.display.max_rows = 500
+np.set_printoptions(precision=4)
+pd.set_option('display.float_format', lambda x: '%.4f' % x)
 
 import math
 from collections import Counter
