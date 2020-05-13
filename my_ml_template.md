@@ -1,14 +1,4 @@
-# Steps of Data Exploration and Preparation:
-1. Variable Identification
-2. Univariate Analysis
-3. Bi-variate Analysis
-4. Missing values treatment
-5. Outlier treatment
-6. Variable transformation
-7. Variable creation
 
-
-***
 
 Code to import libraies:
 
@@ -51,207 +41,21 @@ from sklearn.model_selection import cross_val_score
 ```
 
 
-Loading dataset:
+## Important functions:
 
 ```
-train = pd.read_csv('train.csv')
-test = pd.read_csv('test.csv')
-print("Training data shape: ", train.shape)
-print("Testing data shape: ", test.shape)
-train.head()
+def generate_heatmap(df):
+    # Generate a heatmap with the upper triangular matrix masked
+    # Compute the correlation matrix
+    corr = df.corr(method="spearman")
+    # Generate a mask for the upper triangle
+    mask = np.triu(np.ones_like(corr, dtype=np.bool))
+    plt.figure(figsize = (15,9));
+    # Draw the heatmap with the mask 
+    sns.heatmap(corr, mask=mask, cmap='coolwarm', fmt = '.2f', linewidths=.5, annot = True);
+    plt.title("Correlation heatmap");
+    return
 ```
-
-***
-
-## 1. Variable Identification
-Identify the target variable and the predictor varaibles. 
-
-To find the data types of columns:
-
-```
-train.info()
-``` 
-
-Determining data types of columns
-
-```
-numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-boolean_dtypes = ['bool']
-print("Number of numerical data types: ", len(train.select_dtypes(include = numeric_dtypes).columns))
-print("Number of boolean data types: ", len(train.select_dtypes(include = 'bool').columns))
-print("Number of object data types: ", len(train.select_dtypes(include = 'object').columns))
-```
-
-```
-numerical_columns = list(train.select_dtypes(include = numeric_dtypes).columns)
-string_columns = list(train.select_dtypes(include = 'object').columns)
-bool_columns = list(train.select_dtypes(include = 'bool').columns)
-```
-
-## 2. Univariate Analysis
-
-### Univariate Analysis for numerical variables
-
-Function to find the skewness and kurtosis and presence of null values of columns of dataframe
-
-```
-global measure_columns_spread_df, list_of_columns_with_null_values
-list_of_columns_with_null_values = []
-measure_columns_spread_df = pd.DataFrame(columns = ['col_name', 'skewness', 'kurtosis', 'transformation_reqd', 'null_values'])
-def collect_calculate_col_spread(col, df = train):
-    global measure_columns_spread_df
-    temp = pd.DataFrame(pd.Series([col, df[col].skew(), df[col].kurt(), np.nan, np.nan])).T
-    temp.columns = ['col_name', 'skewness', 'kurtosis', 'transformation_reqd', 'null_values']
-    condition = (df[col].skew() < -1) | (df[col].skew() > 1) | (df[col].kurt() < -1) | ((df[col].kurt() > 1))
-    temp.loc[0,'transformation_reqd']=np.where(condition, 'Yes', 'No')
-    temp.loc[0, 'null_values'] = np.where(df[col].isnull().sum(), 'Present', 'Absent')
-    if (df[col].isnull().sum()):
-        list_of_columns_with_null_values.append(col)
-    print("Count of null values in train dataset: ", df[col].isnull().sum())
-    measure_columns_spread_df = pd.concat([measure_columns_spread_df, temp], ignore_index = True)
-```
-
-Function to automate the univariate analysis of numerical variable 
-
-```
-def univariate_numerical_analysis(col, df = train):
-    collect_calculate_col_spread(df, col)
-    fig, axs = plt.subplots(2,1, figsize = (10,9));
-    sns.distplot(train[col], ax = axs[0]);
-    axs[0].set_title("Histogram of " + col);
-    axs[1].set_title("Boxplot of " + col);
-    sns.boxplot(train[col], ax = axs[1]);
-    title=("Skewness of {}: ".format(col) + "{0:.2f}".format(train[col].skew()) + " and " + "Kurtosis of {}: ".format(col) 
-           +"{0:.2f}".format(train[col].kurt()))
-    fig.suptitle(title, y = 1.01);
-    plt.tight_layout(); 
-    plt.show();
-```
-
-
-For some of the numerical variable this error might come up - [seaborn: Selected KDE bandwidth is 0. Cannot estimate density](https://stackoverflow.com/questions/60596102/seaborn-selected-kde-bandwidth-is-0-cannot-estimate-density). Then use the following code for analysis:
-
-```
-col = ''
-train[col].plot(kind= 'hist');
-```
-
-
-Identify the numerical variables that can be converted to nominal category and note them down in a list col_names-
-1st fill all the NA values
-
-
-```
-for col in list_of_columns_with_null_values:
-    train[col] = train[col].fillna(train[col].median())
-    test[col] = test[col].fillna(train[col].median())
-```
-
-```
-col_names = [.........]
-for col in col_names:
-    train[col] = train[col].astype('category')
-    test[col] = test[col].astype('category')
-```
-
-For each ordinal category data type
-```
-cat_type = CategoricalDtype([.........],ordered = True)
-train[col] = train[col].astype(cat_type)
-train[col] = train[col].astype(cat_type)
-```
-
-Columns having month, year as its values
-[.......]
-
-Columns with kde bw error with `sns.distplot()`
-[......]
-
-
-
-CHeck for presence of 
-
-```
-measure_columns_spread_df.to_pickle('numerical_spread.pkl')
-```
-
-
-
-
-### Univariate Analysis for categorical variables
-
-Make a list of object/category columns where NA implies a category in itself eg: No road, No pool, etc, replace NA here by 'None'.
-
-```
-object_category_columns = ['category', 'object']
-train.select_dtypes(include = object_category_columns).columns
-```
-
-```
-global list_of_object_category_columns_with_null_values
-list_of_object_category_columns_with_null_values = []
-def univariate_category_analysis(train, col):
-    print('Number of null values in {} is: {}'.format(col, train[col].isnull().sum()))
-    if (train[col].isnull().sum()):
-        list_of_object_category_columns_with_null_values.append(col)
-    (train[col].value_counts(dropna = False, normalize = True)*100).plot(kind = 'barh');
-    plt.xlabel('Count %ge');
-    plt.ylabel(col);
-    plt.show();
-```
-
-
-
-Check for NA and for those values which have the maximum frequency and Nominal and ordinal category type.
-
-
-
-
-Create two lists in which ordinal and nominal columns' names are appended. 
-
-```
-ordinal_columns_list = []
-nominal_columns_list = []
-```
-
-***
-
-# Data Wrangling
-
-#### Make a list of object columns where NA implies a category in itself eg: No road, No pool, etc, replace NA here by 'None'. THEN convert to category type.
-
-(Try to fix this issue in Univariate analysis itself if not possible use this: )
-One way to make a list of such columns - `col_fillna`
-
-Then from the columns obtained use data description to get columns whose NA values implies None. To remove those columns which do not satisfy the NA value as None condition remove that particular columns  from the list.
-
-```
-all_object_category_columns = train.select_dtypes(include = ['object', 'category']).columns
-col_fillna = list(set(test[all_object_category_columns].isnull().sum()[test[all_object_category_columns].isnull().sum()!=0].index.tolist() + 
-train[all_object_category_columns].isnull().sum()[train[all_object_category_columns].isnull().sum()!=0].index.tolist()))
-
-# list of columns which doesnt have NA as category and to be deleted from obj_categoryc_col_with_na
-del_list = []
-for col in del_list:
-    col_fillna.remove(col)
-    
-col_fillna  # columns where NaN values have meaning e.g. no pool etc.
-```
-
-```
-# replace 'NaN' with 'None' in these columns
-for col in cols_fillna:
-    train[col].fillna('None',inplace=True)
-    test[col].fillna('None',inplace=True)
-```
-
-
-
-
-
-
-
-# Data Wrangling - Convert object to category column type only after filling all the NA values
 
 
 
@@ -260,7 +64,7 @@ for col in cols_fillna:
 ## 3. Bivariate Analysis
 
 
-#### a. Categorical and continuous variables
+#### a. Categorical and continuous (target) variables
 
 To find association between a categorical and continuous(target) value using ANOVA
 ```
@@ -273,7 +77,7 @@ def perform_anova_and_its_results(categ_col, num_col=target_numerical_col, df = 
     df_ssw = df_sst - df_ssb
     F_critical = f.ppf(0.95, df_ssb, df_ssw)
     print("F_Critical: {0:.3f}".format(F_critical))
-    results = ols('{} ~{}'.format(num_col, categ_col), data = train).fit()
+    results = ols('{} ~{}'.format(num_col, categ_col), data = df).fit()
     aov_table = sm.stats.anova_lm(results, typ = 1)  
     F_stat = aov_table.loc[categ_col, 'F']
     print("F_statistic: {0:.3f}".format(F_stat))
