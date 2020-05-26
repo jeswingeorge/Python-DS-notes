@@ -127,13 +127,15 @@ df = pd.DataFrame(dependant_category_cols, columns =['col1', 'col2'])
 #### To find association i.e., phi-coefficient between 2 binary categorical variables:
 ```
 def phi_coefficient(a,b):
-	# a and b are 2 binary columns/series of dataframe
-    # At least one variable a or b is a nominal variable.
     temp = pd.crosstab(a,b)
-    return(((temp.iloc[1,1] * temp.iloc[0,0]) - (temp.iloc[0,1]*temp.iloc[1,0]))/
-          np.sqrt(np.prod(temp.apply(sum, axis = 'index').to_list()) * np.prod(temp.apply(sum, axis = 'columns').to_list())))
-
+    nr = (temp.iloc[1,1] * temp.iloc[0,0]) - (temp.iloc[0,1]*temp.iloc[1,0])
+    dr = np.sqrt(np.product(temp.apply(sum, axis = 'index')) * np.prod(temp.apply(sum, axis = 'columns')))
+    return(nr/dr)
 ```
+
+
+
+
 
 #### To find association between nominal categorical variables
 
