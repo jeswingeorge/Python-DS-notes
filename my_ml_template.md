@@ -18,6 +18,10 @@ pd.options.display.max_rows = 500
 np.set_printoptions(precision=4)
 pd.set_option('display.float_format', lambda x: '%.4f' % x)
 
+# importing plotly
+import plotly.express as px
+pd.options.plotting.backend = 'plotly'
+
 import math
 from collections import Counter
 from scipy import stats
