@@ -47,8 +47,10 @@ from sklearn.model_selection import cross_val_score
 
 ## Important functions:
 
+
+#### 1. Generating correlation heatmap
 ```
-def generate_heatmap(df):
+def generate_correlation_heatmap(df):
     # Generate a heatmap with the upper triangular matrix masked
     # Compute the correlation matrix
     corr = df.corr(method="spearman")
@@ -61,6 +63,23 @@ def generate_heatmap(df):
     return
 ```
 
+#### 2. Generating boxplot and histogram together in a single plot
+
+```
+def boxplot_and_histogram_plot(ser):
+    # ser is pandas series
+    # Cut the window in 2 parts
+    fig, (ax_box, ax_hist) = plt.subplots(2, sharex=True, gridspec_kw={"height_ratios": (.15, .85)})
+
+    # Add a graph in each part
+    sns.boxplot(ser, ax = ax_box)
+    sns.distplot(ser, ax = ax_hist)
+
+    # Remove x axis name for the boxplot
+    ax_box.set(xlabel='');
+    sns.despine(ax=ax_hist);
+    sns.despine(ax=ax_box, left=True);
+```
 
 
 
@@ -111,7 +130,7 @@ First need to check if the 2 categorical variables involved are dependant or not
 dependant_category_cols = []
 def chi_square_test(a,b, df = X_train):
     # a and b are the column names of dataframe - pandas series
-    two_way_table = pd.crosstab(X_train[a],X_train[b])
+    two_way_table = pd.crosstab(df[a],df[b])
     p_value = chi2_contingency(two_way_table)[1]
     if (p_value < 0.05):
       #  print("Null hypothesis is rejected. The variables {} and {} are dependent.".format(a,b))
