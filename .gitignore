@@ -1,3 +1,5 @@
 .ipynb_checkpoints
 pseudo_facebook.tsv
 superstore_sample.xlsx
+## Add virtual environment name or folder name whose contents you dont want to be committed and pushed
+py_venv/
